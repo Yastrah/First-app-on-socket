@@ -4,6 +4,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
+
 	"gopkg.in/ini.v1"
 )
 
@@ -11,6 +13,8 @@ type Config struct {
 	host       string
 	port       string
 	messageLen int
+	answerTime int
+	deadline   int
 }
 
 var config Config
@@ -24,12 +28,10 @@ func main() {
 	}
 
 	log.SetOutput(file)
-	log.SetFlags(log.Ldate | log.Ltime)
 	log.Println("Starting listening...")
 
 	listener, _ := net.Listen("tcp", config.host+":"+config.port) // открываем слушающий сокет
 	for {
-		// fmt.Println("Waiting for new connect...")
 		conn, err := listener.Accept() // принимаем TCP-соединение от клиента и создаем новый сокет
 		if err != nil {
 			log.Printf("Conn is nil!")
@@ -45,28 +47,40 @@ func main() {
 func handleClient(conn net.Conn) {
 	defer conn.Close() // закрываем сокет при выходе из функции
 
-	buf := make([]byte, config.messageLen)           // буфер для чтения клиентских данных. Может принять 32 символа за раз
-	conn.Write([]byte("Hello, what's your name?\n")) // пишем в сокет
+	// Установка тайм-аута для подключения
+	deadline := time.Now().Add(time.Duration(config.deadline) * time.Second)
+	err := conn.SetReadDeadline(deadline)
+	if err != nil {
+		log.Printf("Error setting read deadline: %v", err)
+		return
+	}
+
+	buf := make([]byte, config.messageLen) // буфер для чтения клиентских данных. Может принять "messageLen" символа за раз
+
 	for {
 		readLen, err := conn.Read(buf) // читаем из сокета, тут сидит ждет новые данные
 
 		if err != nil {
-			log.Printf("Connection %s is closed!", conn.RemoteAddr().String())
+			if netErr, ok := err.(net.Error); ok && netErr.Timeout() { // Соединение закрыто по тайм-ауту
+				log.Printf("Connection %s is closed due to timeout!\n", conn.RemoteAddr().String())
+			} else { // Другая ошибка
+				log.Printf("Connection %s is closed! Error: %v\n", conn.RemoteAddr().String(), err)
+			}
 			break
 		}
 
 		log.Printf("From %s received: %s", conn.RemoteAddr().String(), string(buf[:readLen]))
 
-		answer := make([]byte, config.messageLen)
+		reversedMess := make([]byte, config.messageLen)
 		for i := readLen - 1; i >= 0; i-- {
-			answer[readLen-i-1] = buf[i]
+			reversedMess[readLen-i-1] = buf[i]
 		}
-		str_answer := "Answer: <" + string(answer[:readLen]) + "> - Server developed by Yastrah"
+		answer := string(reversedMess[:readLen]) + ". Сервер разработан Страховым Я.K. M3O-109Б-23"
 
-		// conn.Write(append([]byte("Echo: "), answer[:readLen]...)) // пишем в сокет
-		conn.Write([]byte(str_answer))
+		time.Sleep(time.Duration(config.answerTime) * time.Second) // Симуляция работы сервера
+		conn.Write([]byte(answer))
 
-		log.Printf("To %s sent: %s", conn.RemoteAddr().String(), string(str_answer))
+		log.Printf("To %s sent: %s", conn.RemoteAddr().String(), answer)
 	}
 }
 
@@ -81,6 +95,8 @@ func loadConfig() Config {
 	config.host = section.Key("host").String()
 	config.port = section.Key("port").String()
 	config.messageLen, _ = section.Key("messageLen").Int()
+	config.answerTime, _ = section.Key("answerTime").Int()
+	config.deadline, _ = section.Key("deadline").Int()
 
 	return config
 }
