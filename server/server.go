@@ -71,11 +71,12 @@ func handleClient(conn net.Conn) {
 
 		log.Printf("From %s received: %s", conn.RemoteAddr().String(), string(buf[:readLen]))
 
-		reversedMess := make([]byte, config.messageLen)
-		for i := readLen - 1; i >= 0; i-- {
-			reversedMess[readLen-i-1] = buf[i]
+		runes := []rune(string(buf[:readLen]))
+		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
+			runes[i], runes[j] = runes[j], runes[i]
 		}
-		answer := string(reversedMess[:readLen]) + ". Сервер разработан Страховым Я.K. M3O-109Б-23"
+
+		answer := string(runes) + ". Сервер разработал Страхов Я.K. M3O-109Б-23"
 
 		time.Sleep(time.Duration(config.answerTime) * time.Second) // Симуляция работы сервера
 		conn.Write([]byte(answer))
