@@ -17,13 +17,14 @@ def receive_messages(conn):
             logging.debug(f"From server received: {message}")
 
         except socket.error as e:
-            logging.error(f"Could not read message: {e}")  
+            logging.error(f"Could not read message: {e}")
+            break  
 
-    logging.debug("Connection closed by server. Exiting...")
+    logging.info("Connection closed by server. Exiting...")
 
 
 def main():
-    file_log = logging.FileHandler(filename="test-logs.log", encoding="utf-8")
+    file_log = logging.FileHandler(filename="client-logs.log", encoding="utf-8")
     logging.basicConfig(format="%(asctime)s [%(levelname)s]: %(message)s", level="DEBUG",
                         datefmt="%Y-%m-%d %H:%M:%S", handlers=[file_log])
 
@@ -35,7 +36,7 @@ def main():
         logging.error(f"Could not connect: {e}")
         sys.exit(0)
 
-    logging.debug("Connected to server")
+    logging.info(f"Connected to server <{config['server']['ip']}>")
     
     # запуск потока для чтения данных из сокета
     receive_thread = threading.Thread(target=receive_messages, args=(conn,))
