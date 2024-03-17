@@ -22,19 +22,18 @@ var config Config
 func main() {
 	config = loadConfig()
 
-	file, err := os.OpenFile("test-logs.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND|os.O_TRUNC, 0666)
+	file, err := os.OpenFile("test-logs.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatal("Failed to open debug log file:", err)
+		log.Fatal("Failed to open log file: ", err)
 	}
-
 	log.SetOutput(file)
-	log.Println("Starting listening...")
 
 	listener, _ := net.Listen("tcp", config.host+":"+config.port) // открываем слушающий сокет
+	log.Print("Starting listening...")
 	for {
-		conn, err := listener.Accept() // принимаем TCP-соединение от клиента и создаем новый сокет
+		conn, err := listener.Accept() // принимаем TCP-соединение от клиента и создаем новый коннект
 		if err != nil {
-			log.Printf("Conn is nil!")
+			log.Print("Could not accept connection!")
 			continue
 		}
 
@@ -55,11 +54,10 @@ func handleClient(conn net.Conn) {
 		return
 	}
 
-	buf := make([]byte, config.messageLen) // буфер для чтения клиентских данных. Может принять "messageLen" символа за раз
+	buf := make([]byte, config.messageLen) // буфер для чтения клиентских данных
 
 	for {
 		readLen, err := conn.Read(buf) // читаем из сокета, тут сидит ждет новые данные
-
 		if err != nil {
 			if netErr, ok := err.(net.Error); ok && netErr.Timeout() { // Соединение закрыто по тайм-ауту
 				log.Printf("Connection %s is closed due to timeout!\n", conn.RemoteAddr().String())
@@ -68,15 +66,16 @@ func handleClient(conn net.Conn) {
 			}
 			break
 		}
+		readStr := string(buf[:readLen])
+		log.Printf("From %s received: %s", conn.RemoteAddr().String(), readStr)
 
-		log.Printf("From %s received: %s", conn.RemoteAddr().String(), string(buf[:readLen]))
-
-		runes := []rune(string(buf[:readLen]))
-		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-			runes[i], runes[j] = runes[j], runes[i]
+		// разворот полученного сообщения
+		var reversedStr string
+		for _, r := range readStr {
+			reversedStr = string(r) + reversedStr
 		}
 
-		answer := string(runes) + ". Сервер разработал Страхов Я.K. M3O-109Б-23"
+		answer := reversedStr + ". Server developed by Strahov Y.K. M3O-109B-23"
 
 		time.Sleep(time.Duration(config.answerTime) * time.Second) // Симуляция работы сервера
 		conn.Write([]byte(answer))
@@ -85,19 +84,18 @@ func handleClient(conn net.Conn) {
 	}
 }
 
-func loadConfig() Config {
+func loadConfig() (config Config) {
 	inidata, err := ini.Load("config.ini")
 	if err != nil {
 		log.Fatal("Fail to read file: ", err)
 	}
 	section := inidata.Section("settings")
 
-	var config Config
 	config.host = section.Key("host").String()
 	config.port = section.Key("port").String()
 	config.messageLen, _ = section.Key("messageLen").Int()
 	config.answerTime, _ = section.Key("answerTime").Int()
 	config.deadline, _ = section.Key("deadline").Int()
 
-	return config
+	return
 }

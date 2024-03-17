@@ -1,8 +1,8 @@
-2024-03-15 16:54:03 [DEBUG]: Connected!
-2024-03-15 16:54:08 [DEBUG]: Info sent: Страхов Ярослав Константинович. М3О-109Б-23
-2024-03-15 16:54:11 [DEBUG]: Recieve message: 32-Б901-О3М .чивонитнатсноК валсорЯ вохартС. Сервер разработал Страхов Я.K. M3O-109Б-23
-2024-03-15 16:54:18 [DEBUG]: Message sent: hello
-2024-03-15 16:54:21 [DEBUG]: Recieve message: olleh. Сервер разработал Страхов Я.K. M3O-109Б-23
-2024-03-15 16:55:40 [DEBUG]: Message sent: jfh
-2024-03-15 16:55:41 [ERROR]: Connection is inactive: [WinError 10053] Программа на вашем хост-компьютере разорвала установленное подключение
-2024-03-15 16:55:41 [DEBUG]: Exiting...
+2024-03-17 15:21:21 [DEBUG]: Connected to server localhost:8080
+2024-03-17 15:21:26 [DEBUG]: To server sent: Страхов Ярослав Константинович. М3О-109Б-23
+2024-03-17 15:21:29 [DEBUG]: From server received: 32-Б901-О3М .чивонитнатсноК валсорЯ вохартС. Server developed by Strahov Y.K. M3O-109B-23
+2024-03-17 15:21:41 [DEBUG]: Connection closed by server. Exiting...
+2024-03-17 15:22:44 [DEBUG]: Connected to server <built-in method getsockname of socket object at 0x0000024e2eb3e080>:<built-in method getsockopt of socket object at 0x0000024e2eb3e080>
+2024-03-17 15:22:49 [DEBUG]: To server sent: Страхов Ярослав Константинович. М3О-109Б-23
+2024-03-17 15:22:52 [DEBUG]: From server received: 32-Б901-О3М .чивонитнатсноК валсорЯ вохартС. Server developed by Strahov Y.K. M3O-109B-23
+2024-03-17 15:23:04 [DEBUG]: Connection closed by server. Exiting...
